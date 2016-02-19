@@ -4,6 +4,7 @@ use commodity::Commodity;
 use decimal::Decimal;
 use quantity::Quantity;
 use price::Price;
+use std::iter::FromIterator;
 
 #[derive(Clone, PartialEq, Eq)]
 enum Side {
@@ -43,13 +44,14 @@ pub struct Amount {
     style: AmountStyle
 }
 
-struct MixedAmount(Vec<Amount>);
+#[derive(Clone, PartialEq, Eq)]
+pub struct MixedAmount(Vec<Amount>);
 
 impl Amount {
     pub fn new() -> Amount {
         Amount {
             commodity: Commodity::new(String::from("")),
-            quantity: Quantity(Decimal::new()),
+            quantity: Quantity(Decimal::new(0, 0)),
             price: Rc::new(Price::None),
             style: AmountStyle::new()
         }
@@ -74,7 +76,8 @@ impl Amount {
     }
 
     pub fn is_negative(&self) -> bool {
-        self.quantity.0 < Decimal::new()
+        let z = Decimal::new(0, 0);
+        self.quantity.0 < z
     }
 }
 
@@ -99,5 +102,15 @@ impl MixedAmount {
             _ => vec!()
         };
         MixedAmount(r)
+    }
+
+    pub fn cost(&self) -> MixedAmount {
+        MixedAmount(self.0.iter().map(|x| x.cost()).collect())
+    }
+}
+
+impl FromIterator<Amount> for MixedAmount {
+    fn from_iter<I: IntoIterator<Item=Amount>>(iterable: I) -> Self {
+        MixedAmount(Vec::from_iter(iterable))
     }
 }

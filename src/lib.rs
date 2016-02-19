@@ -1,8 +1,9 @@
 pub mod amount;
+pub mod decimal;
 pub mod commodity;
+pub mod posting;
 pub mod price;
 pub mod quantity;
-pub mod decimal;
 
 #[cfg(test)]
 mod test {
