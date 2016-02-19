@@ -1,4 +1,7 @@
+
+use std::ops::Add;
 use std::ops::Div;
+use std::num::Zero;
 use std::rc::Rc;
 use commodity::Commodity;
 use decimal::Decimal;
@@ -79,6 +82,15 @@ impl Amount {
         let z = Decimal::new(0, 0);
         self.quantity.0 < z
     }
+
+    pub fn apply_op<F>(op: F, a: Amount, b: Amount) -> Amount where F : Fn(Quantity, Quantity) -> Quantity {
+        Amount {
+            commodity: b.commodity,
+            style: AmountStyle::new(),
+            price: Rc::new(Price::None),
+            quantity: op(a.quantity, b.quantity)
+        }
+    }
 }
 
 impl Div<Quantity> for Amount {
@@ -106,6 +118,20 @@ impl MixedAmount {
 
     pub fn cost(&self) -> MixedAmount {
         MixedAmount(self.0.iter().map(|x| x.cost()).collect())
+    }
+}
+
+impl Zero for MixedAmount {
+    fn zero() -> Self {
+        MixedAmount(vec!())
+    }
+}
+
+impl Add for MixedAmount {
+    type Output = MixedAmount;
+
+    fn add(self, rhs: MixedAmount) -> MixedAmount {
+        MixedAmount(self.0.iter().chain(rhs.0.iter()).map(|x| x.clone()).collect())
     }
 }
 
