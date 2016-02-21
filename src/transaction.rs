@@ -27,3 +27,15 @@ impl Transaction {
         self.tags.iter().chain(self.postings.iter().flat_map(|x| x.tags.iter())).map(|x| x.clone()).collect()
     }
 }
+
+#[derive(Clone, PartialEq, Eq)]
+pub struct ModifierTransaction {
+    pub value_expression: String,
+    pub postings: Vec<Posting>
+}
+
+#[derive(Clone, PartialEq, Eq)]
+pub struct PeriodicTransaction {
+    pub periodic_expression: String,
+    pub postings: Vec<Posting>
+}

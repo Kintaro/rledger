@@ -5,6 +5,7 @@ extern crate chrono;
 pub mod amount;
 pub mod decimal;
 pub mod commodity;
+pub mod journal;
 pub mod posting;
 pub mod price;
 pub mod quantity;

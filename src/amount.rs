@@ -1,4 +1,3 @@
-
 use std::ops::Add;
 use std::ops::Div;
 use std::num::Zero;
@@ -89,6 +88,15 @@ impl Amount {
             style: AmountStyle::new(),
             price: Rc::new(Price::None),
             quantity: op(a.quantity, b.quantity)
+        }
+    }
+
+    pub fn with_commodity(&self, commodity: Commodity) -> Amount {
+        Amount {
+            commodity: commodity,
+            style: self.style.clone(),
+            quantity: self.quantity.clone(),
+            price: Rc::new(Price::None)
         }
     }
 }
