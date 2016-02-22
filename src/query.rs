@@ -6,6 +6,20 @@ use posting::ClearedStatus;
 use quantity::Quantity;
 
 #[derive(Clone, PartialEq, Eq, Debug)]
+pub enum OrdPlus {
+    Lt,
+    LtEq,
+    Gt,
+    GtEq,
+    Eq,
+    AbsLt,
+    AbsLtEq,
+    AbsGt,
+    AbsGtEq,
+    AbsEq
+}
+
+#[derive(Clone, PartialEq, Eq, Debug)]
 pub enum Query {
     Any,
     None,
@@ -19,7 +33,7 @@ pub enum Query {
     Date2(Duration),
     Status(ClearedStatus),
     Real(bool),
-    Amount(Quantity),
+    Amount(OrdPlus, Quantity),
     Symbol(Regex),
     Empty(bool),
     Depth(usize),
@@ -126,6 +140,45 @@ impl Query {
             &Query::Or(ref qs) => Query::Or(qs.iter().filter(|&x| pred(x)).map(|x| x.clone()).collect()),
             _ => if pred(self) { self.clone() } else { Query::Any }
         }.simplify()
+    }
+
+    pub fn is_null(&self) -> bool {
+        match self {
+            &Query::Any => true,
+            &Query::And(ref q) => q.is_empty(),
+            &Query::Not(ref r) => match r.as_ref() {
+                &Query::Or(ref q) => q.is_empty(),
+                _ => false
+            },
+            _ => false
+        }
+    }
+
+    pub fn is_depth(&self) -> bool {
+        match self {
+            &Query::Depth(_) => true,
+            _ => false
+        }
+    }
+
+    pub fn depth(&self) -> usize {
+        fn depth_helper(query: &Query) -> Vec<usize> {
+
+            match query {
+                &Query::Depth(d) => vec!(d),
+                &Query::Or(ref q) => q.iter().flat_map(|x| depth_helper(x)).collect(),
+                &Query::And(ref q) => q.iter().flat_map(|x| depth_helper(x)).collect(),
+                _ => Vec::new()
+            }
+        }
+
+        let q = depth_helper(self);
+        let r = q.iter().min();
+
+        match r {
+            None => 99999,
+            Some(x) => *x
+        }
     }
 }
 
