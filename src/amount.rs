@@ -40,14 +40,14 @@ impl AmountStyle {
 
 #[derive(Clone, PartialEq, Eq)]
 pub struct Amount {
-    commodity: Commodity,
-    quantity: Quantity,
-    price: Rc<Price>,
-    style: AmountStyle
+    pub commodity: Commodity,
+    pub quantity: Quantity,
+    pub price: Rc<Price>,
+    pub style: AmountStyle
 }
 
 #[derive(Clone, PartialEq, Eq)]
-pub struct MixedAmount(Vec<Amount>);
+pub struct MixedAmount(pub Vec<Amount>);
 
 impl Amount {
     pub fn new() -> Amount {

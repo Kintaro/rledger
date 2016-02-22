@@ -4,6 +4,7 @@ use regex::Regex;
 
 use posting::ClearedStatus;
 use quantity::Quantity;
+use amount::{ Amount, MixedAmount };
 
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub enum OrdPlus {
@@ -69,6 +70,21 @@ pub fn same<T: Eq>(vec: &Vec<T>) -> bool {
     vec.iter().all(|x| vec.first().unwrap() == x)
 }
 
+fn compare_amount(ord: OrdPlus, qnt: Quantity, amt: Amount) -> bool {
+    match ord {
+        OrdPlus::Lt => amt.quantity < qnt,
+        OrdPlus::LtEq => amt.quantity <= qnt,
+        OrdPlus::Gt => amt.quantity > qnt,
+        OrdPlus::GtEq => amt.quantity >= qnt,
+        OrdPlus::Eq => amt.quantity == qnt,
+        OrdPlus::AbsLt => amt.quantity.abs() < qnt.abs(),
+        OrdPlus::AbsLtEq => amt.quantity.abs() <= qnt.abs(),
+        OrdPlus::AbsGt => amt.quantity.abs() > qnt.abs(),
+        OrdPlus::AbsGtEq => amt.quantity.abs() >= qnt.abs(),
+        OrdPlus::AbsEq => amt.quantity.abs() == qnt.abs(),
+    }
+}
+
 impl Query {
     pub fn matches_account(&self, account_name: String) -> bool {
         match *self {
@@ -79,6 +95,27 @@ impl Query {
             Query::Depth(d) => account_name_level(account_name) <= d,
             Query::Tag(_, _) => false,
             _ => true,
+        }
+    }
+
+    pub fn matches_amount(&self, amount: &Amount) -> bool {
+        match self {
+            &Query::Not(ref q) => !q.matches_amount(amount),
+            &Query::Any => true,
+            &Query::None => false,
+            &Query::Or(ref qs) => qs.iter().any(|x| x.matches_amount(amount)),
+            &Query::And(ref qs) => qs.iter().all(|x| x.matches_amount(amount)),
+            &Query::Amount(ref ord, ref n) => compare_amount(ord.clone(), n.clone(), amount.clone()),
+            &Query::Symbol(ref r) => true,
+            _ => true
+        }
+    }
+
+    pub fn matches_mixed_amount(&self, &MixedAmount(ref amt): &MixedAmount) -> bool {
+        if amt.is_empty() {
+            self.matches_amount(&Amount::new())
+        } else {
+            amt.iter().any(|x| self.matches_amount(x))
         }
     }
 

@@ -23,7 +23,7 @@ impl DecimalErrorKind {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Ord, Hash)]
 pub struct Decimal {
     pub unscaled: i64,
     pub scale: u32
@@ -50,6 +50,10 @@ impl Decimal {
             Ordering::Greater => Decimal::new(downscale(&self.unscaled, self.scale - new_scale), new_scale),
             Ordering::Less => Decimal::new(upscale(&self.unscaled, new_scale - self.scale), new_scale)
         }
+    }
+
+    pub fn abs(self) -> Decimal {
+        Decimal { unscaled: self.unscaled.abs(), scale: self.scale }
     }
 }
 
