@@ -1,7 +1,7 @@
 use std::ops::Mul;
 use decimal::Decimal;
 
-#[derive(Clone, PartialEq, Eq)]
+#[derive(Clone, PartialEq, Eq, Debug)]
 pub struct Quantity(pub Decimal);
 
 impl Mul for Quantity {

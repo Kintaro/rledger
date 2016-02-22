@@ -5,7 +5,7 @@ use std::fmt::Formatter;
 use std::fmt::Error;
 use std::result::Result;
 
-#[derive(Clone, PartialEq, Eq)]
+#[derive(Clone, PartialEq, Eq, Debug)]
 pub enum ClearedStatus {
     Uncleared,
     Pending,

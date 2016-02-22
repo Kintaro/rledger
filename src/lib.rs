@@ -1,5 +1,6 @@
 #![feature(zero_one)]
 #![feature(iter_arith)]
+#![feature(slice_patterns)]
 
 extern crate chrono;
 extern crate regex;
