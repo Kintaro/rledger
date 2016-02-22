@@ -68,40 +68,44 @@ impl Query {
         }
     }
 
+    fn simplify_helper_and(xs: &Vec<Query>) -> Query {
+        match xs.as_slice() {
+            [] => Query::Any,
+            [ref q] => Query::simplify_helper(q),
+            q => {
+                if same(xs) {
+                    xs.first().unwrap().simplify()
+                } else if q.iter().any(|x| *x == Query::None) {
+                    Query::None
+                } else if q.iter().all(|x| true) {
+                    Query::None
+                } else {
+                    Query::None
+                }
+            }
+        }
+    }
+
+    fn simplify_helper_or(xs: &Vec<Query>) -> Query {
+        match xs.as_slice() {
+            [] => Query::Any,
+            [ref q] => Query::simplify_helper(q),
+            q => {
+                if same(xs) {
+                    xs.first().unwrap().simplify()
+                } else if q.iter().any(|x| *x == Query::Any) {
+                    Query::None
+                } else {
+                    Query::Or(q.iter().filter(|&x| *x != Query::None).map(|x| x.simplify()).collect())
+                }
+            }
+        }
+    }
+
     fn simplify_helper(query: &Query) -> Query {
         match query {
-            &Query::And(ref xs) => {
-                match xs.as_slice() {
-                    [] => Query::Any,
-                    [ref q] => Query::simplify_helper(q),
-                    q => {
-                        if same(xs) {
-                            xs.first().unwrap().simplify()
-                        } else if q.iter().any(|x| *x == Query::None) {
-                            Query::None
-                        } else if q.iter().all(|x| true) {
-                            Query::None
-                        } else {
-                            Query::None
-                        }
-                    }
-                }
-            }
-            &Query::Or(ref xs) => {
-                match xs.as_slice() {
-                    [] => Query::Any,
-                    [ref q] => Query::simplify_helper(q),
-                    q => {
-                        if same(xs) {
-                            xs.first().unwrap().simplify()
-                        } else if q.iter().any(|x| *x == Query::Any) {
-                            Query::None
-                        } else {
-                            Query::Or(q.iter().filter(|&x| *x != Query::None).map(|x| x.simplify()).collect())
-                        }
-                    }
-                }
-            }
+            &Query::And(ref xs) => Query::simplify_helper_and(xs),
+            &Query::Or(ref xs) => Query::simplify_helper_or(xs),
             q => q.clone()
         }
     }
@@ -129,9 +133,6 @@ impl Query {
 fn simplify_test() {
     let q = Query::And(vec!(Query::Or(vec!(Query::Or(vec!(Query::Desc(Regex::new("b b").unwrap())))))));
     let sq = q.simplify();
-
-    println!("Orig: {:?}", q);
-    println!("Simp: {:?}", sq);
 
     assert!(sq == Query::Desc(Regex::new("b b").unwrap()))
 }
