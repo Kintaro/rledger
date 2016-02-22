@@ -40,6 +40,18 @@ pub struct Journal {
 }
 
 impl Journal {
+    /// Creates a new empty journal
+    pub fn new() -> Journal {
+        Journal {
+            modifier_transactions: Vec::new(),
+            periodic_transactions: Vec::new(),
+            transactions: Vec::new(),
+            market_prices: Vec::new(),
+            final_comment_lines: String::from(""),
+            context: JournalContext::new()
+        }
+    }
+
     /// Adds a new transaction to the journal
     pub fn add_transaction_mut(&mut self, transaction: Transaction) {
         self.transactions.push(transaction)
